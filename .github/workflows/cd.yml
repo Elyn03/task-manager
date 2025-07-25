@@ -27,7 +27,7 @@ jobs:
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v3 # Action to set up Terraform
       with:
-        terraform_version: "1.12.1" # Specifies the version of Terraform to use
+        terraform_version: "1.8.5" # Specifies the version of Terraform to use
     - name: deploy terraform # Step to deploy using a custom script
       run: |
         terraform fmt
