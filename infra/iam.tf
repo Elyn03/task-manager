@@ -46,7 +46,7 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:Elyn03/task-manager:ref:refs/heads/main"]
+      values   = ["repo:Elyn03/task-manager:*"]
     }
 
     condition {
