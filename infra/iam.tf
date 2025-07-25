@@ -34,14 +34,29 @@ data "aws_iam_policy_document" "task_manager_execution_policy_document" {
 
 data "aws_iam_policy_document" "task_manager_assume_role_policy" {
   statement {
-    actions = ["sts:AssumeRole"]
+    effect = "Allow"
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
 
     principals {
-      type        = "Service"
-      identifiers = ["lambda.amazonaws.com"]
+      type        = "Federated"
+      identifiers = ["arn:aws:iam::841162711590:oidc-provider/token.actions.githubusercontent.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:Elyn03/task-manager:ref:refs/heads/main"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
     }
   }
 }
+
 
 resource "aws_iam_role" "task_manager_apigateway_role" {
   name = "task-manager-apigateway-role"
