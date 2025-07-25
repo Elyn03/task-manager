@@ -1,0 +1,17 @@
+services:
+  serveur:
+    build: ./server
+    ports:
+      - "3005:3005"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev"]
