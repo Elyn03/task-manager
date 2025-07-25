@@ -4,9 +4,12 @@
   "type": "module",
   "main": "lambda.js",
   "dependencies": {
-    "aws-sdk": "^2.1414.0"
+    "aws-sdk": "^2.1414.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
   },
   "scripts": {
-    "build": "zip -r ../infra/lambda_function_payload.zip ."
+    "build": "zip -r ../infra/lambda_function_payload.zip .",
+    "start": "node local-server.mjs"
   }
 }
