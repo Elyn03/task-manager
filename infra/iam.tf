@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
     }
 
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values   = ["repo:Elyn03/task-manager:*"]
     }
@@ -56,6 +56,7 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
     }
   }
 }
+
 
 
 resource "aws_iam_role" "task_manager_apigateway_role" {
