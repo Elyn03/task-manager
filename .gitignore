@@ -46,9 +46,9 @@ dist-ssr/
 *.sln
 *.sw?
 
-# === Docker (optionnel) ===
+# === Docker ===
 *.env
 .env.*
-.dockerignore
-Dockerfile*
-docker-compose.*
+
+
+
