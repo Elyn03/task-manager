@@ -29,9 +29,9 @@ jobs:
 
     - name: Build and push backend image
       run: |
-        docker build -t task-manager-api ./api
-        docker tag task-manager-api lokiice/task-manager:api
-        docker push lokiice/task-manager:api
+        docker build -t task-manager-api ./server
+        docker tag task-manager-api lokiice/task-manager:server
+        docker push lokiice/task-manager:server
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
