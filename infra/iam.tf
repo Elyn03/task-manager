@@ -1,34 +1,75 @@
 resource "aws_iam_policy" "task_manager_apigateway_policy" {
   name        = "task-manager-apigateway-policy"
   description = "task_manager_execution_policy"
-  policy = data.aws_iam_policy_document.task_manager_execution_policy_document.json
+  policy      = data.aws_iam_policy_document.task_manager_execution_policy_document.json
 }
 
 data "aws_iam_policy_document" "task_manager_execution_policy_document" {
   statement {
     actions = [
       "dynamodb:DeleteItem",
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:Query",
-        "dynamodb:Scan",
-        "dynamodb:UpdateItem"
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:UpdateItem"
     ]
-    effect = "Allow"
-    resources = [
-      "*",
-    ]
+    effect    = "Allow"
+    resources = ["*"]
   }
+
   statement {
     actions = [
-       "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
     ]
-    effect = "Allow"
-    resources = [
-      "*",
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "s3:CreateBucket",
+      "s3:PutBucketPolicy",
+      "s3:GetBucketPolicy",
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject"
     ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "cloudfront:CreateCloudFrontOriginAccessIdentity",
+      "cloudfront:GetDistribution",
+      "cloudfront:UpdateDistribution",
+      "cloudfront:CreateDistribution"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "iam:CreatePolicy",
+      "iam:CreateRole",
+      "iam:PutRolePolicy",
+      "iam:AttachRolePolicy",
+      "iam:PassRole"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "apigateway:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
   }
 }
 
