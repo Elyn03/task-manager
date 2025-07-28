@@ -5,30 +5,90 @@ resource "aws_iam_policy" "task_manager_apigateway_policy" {
 }
 
 data "aws_iam_policy_document" "task_manager_execution_policy_document" {
+  # Permissions DynamoDB complètes
   statement {
     actions = [
-      "dynamodb:DeleteItem",
-      "dynamodb:GetItem",
-      "dynamodb:PutItem",
-      "dynamodb:Query",
-      "dynamodb:Scan",
-      "dynamodb:UpdateItem"
+      "dynamodb:*"
     ]
     effect = "Allow"
-    resources = [
-      "*",
-    ]
+    resources = ["*"]
   }
+
+  # Permissions CloudWatch Logs
   statement {
     actions = [
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents"
+      "logs:*"
     ]
     effect = "Allow"
-    resources = [
-      "*",
+    resources = ["*"]
+  }
+
+  # Permissions IAM complètes
+  statement {
+    actions = [
+      "iam:*"
     ]
+    effect = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions Lambda complètes
+  statement {
+    actions = [
+      "lambda:*"
+    ]
+    effect = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions API Gateway complètes
+  statement {
+    actions = [
+      "apigateway:*"
+    ]
+    effect = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions S3 complètes
+  statement {
+    actions = [
+      "s3:*"
+    ]
+    effect = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions CloudFront complètes
+  statement {
+    actions = [
+      "cloudfront:*"
+    ]
+    effect = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions pour les tags
+  statement {
+    actions = [
+      "tag:GetResources",
+      "tag:TagResources",
+      "tag:UntagResources",
+      "tag:GetTagKeys",
+      "tag:GetTagValues"
+    ]
+    effect = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions pour STS (nécessaire pour assume role)
+  statement {
+    actions = [
+      "sts:GetCallerIdentity",
+      "sts:AssumeRole"
+    ]
+    effect = "Allow"
+    resources = ["*"]
   }
 }
 
