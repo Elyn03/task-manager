@@ -1,18 +1,18 @@
 resource "aws_iam_policy" "task_manager_apigateway_policy" {
   name        = "task-manager-apigateway-policy"
   description = "task_manager_execution_policy"
-  policy = data.aws_iam_policy_document.task_manager_execution_policy_document.json
+  policy      = data.aws_iam_policy_document.task_manager_execution_policy_document.json
 }
 
 data "aws_iam_policy_document" "task_manager_execution_policy_document" {
   statement {
     actions = [
       "dynamodb:DeleteItem",
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:Query",
-        "dynamodb:Scan",
-        "dynamodb:UpdateItem"
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:UpdateItem"
     ]
     effect = "Allow"
     resources = [
@@ -21,9 +21,9 @@ data "aws_iam_policy_document" "task_manager_execution_policy_document" {
   }
   statement {
     actions = [
-       "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
     ]
     effect = "Allow"
     resources = [
@@ -57,9 +57,8 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
   }
 }
 
-
 resource "aws_iam_role" "task_manager_apigateway_role" {
-  name = "task-manager-apigateway-role"
+  name               = "task-manager-apigateway-role"
   assume_role_policy = data.aws_iam_policy_document.task_manager_assume_role_policy.json
 
 }
@@ -67,4 +66,33 @@ resource "aws_iam_role" "task_manager_apigateway_role" {
 resource "aws_iam_role_policy_attachment" "task_manager_apigateway_attachment" {
   role       = aws_iam_role.task_manager_apigateway_role.name
   policy_arn = aws_iam_policy.task_manager_apigateway_policy.arn
+}
+
+# Rôle IAM spécifique pour Lambda
+data "aws_iam_policy_document" "lambda_assume_role_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "task_manager_lambda_role" {
+  name               = "task-manager-lambda-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "task_manager_lambda_attachment" {
+  role       = aws_iam_role.task_manager_lambda_role.name
+  policy_arn = aws_iam_policy.task_manager_apigateway_policy.arn
+}
+
+# Politique pour les logs CloudWatch pour Lambda
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.task_manager_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
