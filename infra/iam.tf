@@ -71,6 +71,14 @@ data "aws_iam_policy_document" "task_manager_execution_policy_document" {
     effect    = "Allow"
     resources = ["*"]
   }
+
+  statement {
+    actions = [
+      "cloudfront:GetCloudFrontOriginAccessIdentity"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
 }
 
 data "aws_iam_policy_document" "task_manager_assume_role_policy" {
@@ -85,9 +93,9 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
     }
 
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:Elyn03/task-manager:*"]
+      values   = ["repo:Elyn03/task-manager:ref:refs/heads/main"]
     }
 
     condition {
@@ -101,12 +109,26 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
 
 
 resource "aws_iam_role" "task_manager_apigateway_role" {
-  name = "task-manager-apigateway-role"
+  name               = "task-manager-apigateway-role"
   assume_role_policy = data.aws_iam_policy_document.task_manager_assume_role_policy.json
-
 }
 
 resource "aws_iam_role_policy_attachment" "task_manager_apigateway_attachment" {
   role       = aws_iam_role.task_manager_apigateway_role.name
   policy_arn = aws_iam_policy.task_manager_apigateway_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_s3_full" {
+  role       = aws_iam_role.task_manager_apigateway_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_cloudfront_full" {
+  role       = aws_iam_role.task_manager_apigateway_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudFrontFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_iam_full" {
+  role       = aws_iam_role.task_manager_apigateway_role.name
+  policy_arn = "arn:aws:iam::aws:policy/IAMFullAccess"
 }
