@@ -84,7 +84,6 @@ data "aws_iam_policy_document" "task_manager_execution_policy_document" {
 data "aws_iam_policy_document" "task_manager_assume_role_policy" {
   statement {
     effect = "Allow"
-
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     principals {
@@ -93,9 +92,12 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
     }
 
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:Elyn03/task-manager:ref:refs/heads/main"]
+      values   = [
+        "repo:Elyn03/task-manager:pull_request",
+        "repo:Elyn03/task-manager:ref:refs/heads/main"
+      ]
     }
 
     condition {
@@ -105,8 +107,6 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
     }
   }
 }
-
-
 
 resource "aws_iam_role" "task_manager_apigateway_role" {
   name               = "task-manager-apigateway-role"
