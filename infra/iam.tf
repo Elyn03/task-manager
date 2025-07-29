@@ -1,5 +1,5 @@
 resource "aws_iam_policy" "task_manager_apigateway_policy" {
-  name        = "task-manager-apigateway-policy"
+  name        = "task-manager-apigateway-policy-${random_integer.random.result}"
   description = "task_manager_execution_policy"
   policy      = data.aws_iam_policy_document.task_manager_execution_policy_document.json
 }
@@ -46,7 +46,8 @@ data "aws_iam_policy_document" "task_manager_execution_policy_document" {
       "cloudfront:CreateCloudFrontOriginAccessIdentity",
       "cloudfront:GetDistribution",
       "cloudfront:UpdateDistribution",
-      "cloudfront:CreateDistribution"
+      "cloudfront:CreateDistribution",
+      "cloudfront:GetCloudFrontOriginAccessIdentity"
     ]
     effect    = "Allow"
     resources = ["*"]
@@ -71,19 +72,11 @@ data "aws_iam_policy_document" "task_manager_execution_policy_document" {
     effect    = "Allow"
     resources = ["*"]
   }
-
-  statement {
-    actions = [
-      "cloudfront:GetCloudFrontOriginAccessIdentity"
-    ]
-    effect    = "Allow"
-    resources = ["*"]
-  }
 }
 
 data "aws_iam_policy_document" "task_manager_assume_role_policy" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     principals {
@@ -95,8 +88,7 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values   = [
-        "repo:Elyn03/task-manager:pull_request",
-        "repo:Elyn03/task-manager:ref:refs/heads/main"
+        "repo:Elyn03/task-manager:*"
       ]
     }
 
@@ -109,7 +101,7 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
 }
 
 resource "aws_iam_role" "task_manager_apigateway_role" {
-  name               = "task-manager-apigateway-role"
+  name               = "task-manager-apigateway-role-${random_integer.random.result}"
   assume_role_policy = data.aws_iam_policy_document.task_manager_assume_role_policy.json
 }
 
