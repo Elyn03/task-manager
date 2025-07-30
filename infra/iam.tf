@@ -1,5 +1,5 @@
 resource "aws_iam_policy" "task_manager_apigateway_policy" {
-  name        = "task-manager-apigateway-policy-${random_integer.random.result}"
+  name        = "task-manager-apigateway-policy"
   description = "task_manager_execution_policy"
   policy      = data.aws_iam_policy_document.task_manager_execution_policy_document.json
 }
@@ -87,13 +87,11 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [
-        "repo:Elyn03/task-manager:*"
-      ]
+      values   = ["repo:Elyn03/task-manager:ref:refs/heads/*"]
     }
 
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:aud"
       values   = ["sts.amazonaws.com"]
     }
@@ -101,7 +99,7 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
 }
 
 resource "aws_iam_role" "task_manager_apigateway_role" {
-  name               = "task-manager-apigateway-role-${random_integer.random.result}"
+  name               = "task-manager-apigateway-role"
   assume_role_policy = data.aws_iam_policy_document.task_manager_assume_role_policy.json
 }
 

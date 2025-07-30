@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: Deploy Task Manager
 
 on:
@@ -5,49 +6,46 @@ on:
     branches: [main]
 
 permissions:
-  id-token: write # Permission to write an ID token
-  contents: read # Permission to read contents
-  
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push frontend image
-      run: |
-        docker build -t task-manager-client ./client
-        docker tag task-manager-client lokiice/task-manager:client
-        docker push lokiice/task-manager:client
+      - name: Build and push frontend image
+        run: |
+          docker build -t task-manager-client ./client
+          docker tag task-manager-client lokiice/task-manager:client
+          docker push lokiice/task-manager:client
 
-    - name: Build and push backend image
-      run: |
-        docker build -t task-manager-api ./api
-        docker tag task-manager-api lokiice/task-manager:api
-        docker push lokiice/task-manager:api
+      - name: Build and push backend image
+        run: |
+          docker build -t task-manager-api ./api
+          docker tag task-manager-api lokiice/task-manager:api
+          docker push lokiice/task-manager:api
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{secrets.AWS_IAM_ROLE}}
-        aws-region: eu-west-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: eu-west-1
 
-    - name: Deploy with Terraform
-      run: |
-        cd infra
-        terraform init
-        terraform apply -auto-approve
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Deploy infrastructure with Terraform
+        run: |
+          cd infra
+          terraform init
+          terraform apply -auto-approve
