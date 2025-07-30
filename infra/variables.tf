@@ -1,16 +1,16 @@
 variable "bucket_name" {
-  type = string
+  type        = string
   description = "Task manager project"
-  default = "task-manager"
+  default     = "task-manager"
 }
 
 variable "tags" {
   type = object({
-    Name = string
+    Name        = string
     Environment = string
   })
   default = {
-    Name = "task_manager_bucket"
+    Name        = "task_manager_bucket"
     Environment = "dev"
   }
 }
@@ -35,7 +35,7 @@ variable "sync_directories" {
     s3_target_directory    = string
   }))
   description = "List of directories to synchronize with Amazon S3."
-  default     = [{
+  default = [{
     local_source_directory = "../client/dist"
     s3_target_directory    = ""
   }]

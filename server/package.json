@@ -1,15 +1,15 @@
 {
-  "name": "task-manager-lambda",
+  "name": "task-manager-task_manager",
   "version": "1.0.0",
   "type": "module",
-  "main": "lambda.js",
+  "main": "task_manager.js",
   "dependencies": {
     "aws-sdk": "^2.1414.0",
     "cors": "^2.8.5",
     "express": "^5.1.0"
   },
   "scripts": {
-    "build": "zip -r ../infra/lambda_function_payload.zip .",
+    "build": "zip -r ../infra/task_manager_function_payload.zip .",
     "start": "node local-server.mjs"
   }
 }
