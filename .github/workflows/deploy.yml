@@ -83,7 +83,7 @@ jobs:
       - name: Build and push backend image
         run: |
           cd server
-          docker build -t task-manager-api ./api
+          docker build -t task-manager-api ./server
           docker tag task-manager-api lokiice/task-manager:api
           docker push lokiice/task-manager:api
 
