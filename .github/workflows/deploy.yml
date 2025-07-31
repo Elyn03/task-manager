@@ -101,13 +101,7 @@ jobs:
         run: |
           cd infra
           terraform init -input=false
-          terraform apply -auto-approve  # optional: only if outputs not generated
-          BUCKET_NAME=$(terraform output -raw s3_bucket_name 2>/dev/null || echo "")
-          if [ -z "$BUCKET_NAME" ]; then
-            echo "No bucket name found from Terraform outputs."
-            exit 1
-          fi
-          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_OUTPUT
+          echo "BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
 
       - name: Deploy to S3
         run: |
