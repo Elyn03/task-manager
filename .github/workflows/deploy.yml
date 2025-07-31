@@ -103,9 +103,8 @@ jobs:
       - name: Get S3 bucket name from Terraform
         id: get-bucket
         run: |
-          set -x
           cd infra
-          terraform output -raw s3_bucket_name
+          terraform init -input=false
           echo "BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
 
       - name: Deploy to S3
@@ -116,6 +115,7 @@ jobs:
         id: get-cloudfront
         run: |
           cd infra
+          terraform init -input=false
           echo "DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
 
       - name: Invalidate CloudFront cache
