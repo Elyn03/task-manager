@@ -20,7 +20,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::841162711590:role/task-manager-apigateway-role
+          role-to-assume: arn:aws:iam::135808940576:role/task-manager-apigateway-role
+          role-session-name: GitHubActions
           aws-region: eu-west-1
 
       - name: Setup Terraform
@@ -36,10 +37,9 @@ jobs:
       - name: Import existing resources (ignore errors if they don't exist)
         run: |
           cd infra
-          terraform import aws_iam_policy.task_manager_apigateway_policy arn:aws:iam::841162711590:policy/task-manager-apigateway-policy || true
+          terraform import aws_iam_policy.task_manager_apigateway_policy arn:aws:iam::135808940576:policy/task-manager-apigateway-policy || true
           terraform import aws_iam_role.task_manager_apigateway_role task-manager-apigateway-role || true
-          terraform import aws_cloudfront_origin_access_identity.origin_s3 E1J55C9RVYEM3E || true
-          terraform import aws_lambda_function.lambda_function_over_https LambdaFunctionOverHttps || true
+          terraform import aws_iam_openid_connect_provider.github_actions arn:aws:iam::135808940576:oidc-provider/token.actions.githubusercontent.com || true
 
       - name: Terraform Plan
         run: |
@@ -56,7 +56,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Build React App
         if: github.ref == 'refs/heads/main'

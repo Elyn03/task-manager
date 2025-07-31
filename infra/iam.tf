@@ -1,6 +1,5 @@
-# ==============================================
+
 # OIDC Provider pour GitHub Actions
-# ==============================================
 resource "aws_iam_openid_connect_provider" "github_actions" {
   url = "https://token.actions.githubusercontent.com"
 
@@ -19,11 +18,7 @@ resource "aws_iam_openid_connect_provider" "github_actions" {
   }
 }
 
-# ==============================================
 # Politiques IAM
-# ==============================================
-
-# Politique étendue pour GitHub Actions avec toutes les permissions nécessaires
 resource "aws_iam_policy" "github_actions_deployment_policy" {
   name        = "github-actions-deployment-policy"
   description = "Politique pour déploiement GitHub Actions"
