@@ -45,10 +45,6 @@ jobs:
 
   build_n_deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: client
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
