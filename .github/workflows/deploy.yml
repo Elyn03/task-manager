@@ -84,8 +84,8 @@ jobs:
         run: |
           cd server
           docker build -t task-manager-api ./server
-          docker tag task-manager-api lokiice/task-manager:api
-          docker push lokiice/task-manager:api
+          docker tag task-manager-api lokiice/task-manager:server
+          docker push lokiice/task-manager:server
 
       - name: Build and push frontend image
         run: |
