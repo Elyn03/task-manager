@@ -103,7 +103,9 @@ jobs:
       - name: Get S3 bucket name from Terraform
         id: get-bucket
         run: |
+          set -x
           cd infra
+          terraform output -raw s3_bucket_name
           echo "BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
 
       - name: Deploy to S3
