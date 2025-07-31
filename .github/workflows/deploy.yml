@@ -1,18 +1,19 @@
-name: Deploy Infrastructure
+name: Deploy AWS
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
+permissions:
+  id-token: write
+  contents: read
 
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,71 +21,99 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::841162711590:role/task-manager-apigateway-role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
 
-      - name: Setup Terraform
+      - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.0
+          terraform_version: latest
 
       - name: Terraform Init
-        run: |
-          cd infra
-          terraform init
+        run: terraform init
 
-      - name: Import existing resources (ignore errors if they don't exist)
-        run: |
-          cd infra
-          terraform import aws_iam_policy.task_manager_apigateway_policy arn:aws:iam::841162711590:policy/task-manager-apigateway-policy || true
-          terraform import aws_iam_role.task_manager_apigateway_role task-manager-apigateway-role || true
-          terraform import aws_cloudfront_origin_access_identity.origin_s3 E1J55C9RVYEM3E || true
-          terraform import aws_lambda_function.lambda_function_over_https LambdaFunctionOverHttps || true
+      - name: Terraform Format Check
+        run: terraform fmt -check
 
-      - name: Terraform Plan
-        run: |
-          cd infra
-          terraform plan
+      - name: Terraform Plan 
+        run: terraform plan
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
-        run: |
-          cd infra
-          terraform apply -auto-approve
+        run: terraform apply -auto-approve
 
-      - name: Setup Node.js
-        if: github.ref == 'refs/heads/main'
+  build_n_deploy:
+    runs-on: ubuntu-latest
+    needs: terraform
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-
-      - name: Build React App
-        if: github.ref == 'refs/heads/main'
+      
+      - name: Install dependencies
         run: |
           cd client
           npm install
           npm run build
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # - name: Build and push backend image
+      #   run: |
+      #     cd server
+      #     docker build -t task-manager-api ./server
+      #     docker tag task-manager-api lokiice/task-manager:server
+      #     docker push lokiice/task-manager:server
+
+      # - name: Build and push frontend image
+      #   run: |
+      #     cd client
+      #     docker build -t task-manager-client .
+      #     docker tag task-manager-client lokiice/task-manager:client
+      #     docker push lokiice/task-manager:client
+
       - name: Get S3 bucket name from Terraform
-        if: github.ref == 'refs/heads/main'
         id: get-bucket
         run: |
           cd infra
+          terraform init -input=false
           echo "BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
 
       - name: Deploy to S3
-        if: github.ref == 'refs/heads/main'
         run: |
           aws s3 sync client/dist/ s3://${{ steps.get-bucket.outputs.BUCKET_NAME }} --delete
 
       - name: Get CloudFront distribution ID
-        if: github.ref == 'refs/heads/main'
         id: get-cloudfront
         run: |
           cd infra
+          terraform init -input=false
           echo "DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
 
-      - name: Invalidate CloudFront
-        if: github.ref == 'refs/heads/main'
+      - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation --distribution-id ${{ steps.get-cloudfront.outputs.DISTRIBUTION_ID }} --paths "/*"
