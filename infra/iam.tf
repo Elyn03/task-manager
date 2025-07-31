@@ -1,8 +1,126 @@
+# ==============================================
+# OIDC Provider pour GitHub Actions
+# ==============================================
+resource "aws_iam_openid_connect_provider" "github_actions" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com",
+  ]
+
+  thumbprint_list = [
+    "6938fd4d98bab03faadb97b34396831e3780aea1",
+    "1c58a3a8518e8759bf075b76b750d4f2df264fcd"
+  ]
+
+  tags = {
+    Name        = "GitHub Actions OIDC Provider"
+    Environment = "dev"
+  }
+}
+
+# ==============================================
+# Politiques IAM
+# ==============================================
+
+# Politique étendue pour GitHub Actions avec toutes les permissions nécessaires
+resource "aws_iam_policy" "github_actions_deployment_policy" {
+  name        = "github-actions-deployment-policy"
+  description = "Politique pour déploiement GitHub Actions"
+  policy      = data.aws_iam_policy_document.github_actions_deployment_policy_document.json
+}
+
+data "aws_iam_policy_document" "github_actions_deployment_policy_document" {
+  # Permissions DynamoDB
+  statement {
+    actions = [
+      "dynamodb:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions S3
+  statement {
+    actions = [
+      "s3:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions CloudFront
+  statement {
+    actions = [
+      "cloudfront:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions Lambda
+  statement {
+    actions = [
+      "lambda:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions API Gateway
+  statement {
+    actions = [
+      "apigateway:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions IAM (pour créer/modifier les rôles)
+  statement {
+    actions = [
+      "iam:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions CloudWatch Logs
+  statement {
+    actions = [
+      "logs:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions pour les tags
+  statement {
+    actions = [
+      "tag:*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  # Permissions STS
+  statement {
+    actions = [
+      "sts:GetCallerIdentity",
+      "sts:AssumeRole"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+}
+
 resource "aws_iam_policy" "task_manager_apigateway_policy" {
   name        = "task-manager-apigateway-policy"
   description = "task_manager_execution_policy"
   policy      = data.aws_iam_policy_document.task_manager_execution_policy_document.json
 }
+
+
 
 data "aws_iam_policy_document" "task_manager_execution_policy_document" {
   statement {
@@ -40,7 +158,7 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
 
     principals {
       type        = "Federated"
-      identifiers = ["arn:aws:iam::841162711590:oidc-provider/token.actions.githubusercontent.com"]
+      identifiers = [aws_iam_openid_connect_provider.github_actions.arn]
     }
 
     condition {
@@ -66,6 +184,12 @@ resource "aws_iam_role" "task_manager_apigateway_role" {
 resource "aws_iam_role_policy_attachment" "task_manager_apigateway_attachment" {
   role       = aws_iam_role.task_manager_apigateway_role.name
   policy_arn = aws_iam_policy.task_manager_apigateway_policy.arn
+}
+
+# Attachement de la politique GitHub Actions pour déploiement complet
+resource "aws_iam_role_policy_attachment" "github_actions_deployment_attachment" {
+  role       = aws_iam_role.task_manager_apigateway_role.name
+  policy_arn = aws_iam_policy.github_actions_deployment_policy.arn
 }
 
 # Rôle IAM spécifique pour Lambda
