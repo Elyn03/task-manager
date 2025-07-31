@@ -158,14 +158,19 @@ data "aws_iam_policy_document" "task_manager_assume_role_policy" {
 
     condition {
       test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:Elyn03/task-manager:*"]
-    }
-
-    condition {
-      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:aud"
       values   = ["sts.amazonaws.com"]
+    }
+
+    # Condition plus spécifique selon les recommandations GitHub/AWS
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values = [
+        "repo:Elyn03/task-manager:*",
+        "repo:Elyn03/task-manager:ref:refs/heads/*",
+        "repo:Elyn03/task-manager:ref:refs/pull/*"
+      ]
     }
   }
 }
