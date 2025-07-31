@@ -45,6 +45,7 @@ jobs:
 
   build_n_deploy:
     runs-on: ubuntu-latest
+    needs: terraform
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,7 +58,8 @@ jobs:
       - name: Install dependencies
         run: |
           cd client
-          npm ci
+          npm install
+          npm run build
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
@@ -93,12 +95,6 @@ jobs:
       #     docker build -t task-manager-client .
       #     docker tag task-manager-client lokiice/task-manager:client
       #     docker push lokiice/task-manager:client
-
-      - name: Build React App
-        run: |
-          cd client
-          npm install
-          npm run build
 
       - name: Get S3 bucket name from Terraform
         id: get-bucket
